@@ -21,6 +21,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:prompt": "tsx test-prompt.js",
     "lint": "eslint src --ext .ts,.tsx",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit"
@@ -37,7 +38,7 @@
   "license": "MIT",
   "dependencies": {
     "@openrouter/ai-sdk-provider": "^0.4.3",
-    "ai": "^4.1.0",
+    "ai": "^4.3.19",
     "archiver": "^7.0.1",
     "chalk": "^5.4.1",
     "commander": "^13.1.0",

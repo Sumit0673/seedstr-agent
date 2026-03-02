@@ -16,7 +16,7 @@ interface RunOptions {
 export async function runCommand(options: RunOptions): Promise<void> {
   const useTUI = options.tui !== false;
 
-  // Pre-flight checks
+  
   const config = getConfig();
   const configErrors = validateConfig(config);
 
@@ -41,9 +41,9 @@ export async function runCommand(options: RunOptions): Promise<void> {
     console.log(chalk.gray("  Run `npm run verify` to verify via Twitter\n"));
   }
 
-  // Start the agent
+  
   if (useTUI) {
-    // Start with TUI
+    
     startTUI();
   } else {
     // Start without TUI (simple logging)
@@ -86,7 +86,7 @@ export async function runCommand(options: RunOptions): Promise<void> {
       }
     });
 
-    // Handle graceful shutdown
+    
     process.on("SIGINT", async () => {
       console.log(chalk.yellow("\n\nShutting down..."));
       await runner.stop();
@@ -98,7 +98,7 @@ export async function runCommand(options: RunOptions): Promise<void> {
       process.exit(0);
     });
 
-    // Start the runner
+    
     await runner.start();
   }
 }

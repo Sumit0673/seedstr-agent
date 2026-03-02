@@ -75,7 +75,7 @@ export const logger = {
     }
   },
 
-  // Special formatting for agent events
+  
   job(action: string, jobId: string, details?: string): void {
     if (shouldLog("info")) {
       console.log(

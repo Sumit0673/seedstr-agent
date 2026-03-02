@@ -14,13 +14,13 @@ export async function statusCommand(): Promise<void> {
   const config = getConfig();
   const stored = getStoredAgent();
 
-  // Configuration check
+  
   console.log(chalk.white("Configuration:"));
   console.log(chalk.gray("─".repeat(50)));
 
   const configErrors = validateConfig(config);
 
-  // OpenRouter API Key
+  
   if (config.openrouterApiKey) {
     console.log(
       chalk.green("  ✓ ") +
@@ -35,7 +35,7 @@ export async function statusCommand(): Promise<void> {
     );
   }
 
-  // Wallet Address
+  
   if (config.solanaWalletAddress) {
     console.log(
       chalk.green("  ✓ ") +
@@ -50,12 +50,12 @@ export async function statusCommand(): Promise<void> {
     );
   }
 
-  // Model
+  
   console.log(
     chalk.green("  ✓ ") + chalk.white("Model: ") + chalk.gray(config.model)
   );
 
-  // Tools
+  
   const enabledTools = [];
   if (config.tools.webSearchEnabled) enabledTools.push("Web Search");
   if (config.tools.calculatorEnabled) enabledTools.push("Calculator");
@@ -69,7 +69,7 @@ export async function statusCommand(): Promise<void> {
 
   console.log(chalk.gray("─".repeat(50)));
 
-  // Registration check
+  
   console.log(chalk.white("\nRegistration:"));
   console.log(chalk.gray("─".repeat(50)));
 
@@ -98,7 +98,7 @@ export async function statusCommand(): Promise<void> {
       chalk.gray(stored.agentId || "Unknown")
   );
 
-  // Fetch live status from API
+  
   const spinner = ora("Checking verification status...").start();
 
   try {
@@ -148,7 +148,7 @@ export async function statusCommand(): Promise<void> {
     );
     console.log(chalk.gray("─".repeat(50)));
 
-    // Ready check
+    
     console.log(chalk.white("\nReady to run:"));
     console.log(chalk.gray("─".repeat(50)));
 

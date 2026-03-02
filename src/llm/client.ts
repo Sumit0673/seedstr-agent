@@ -6,6 +6,8 @@ import { logger } from "../utils/logger.js";
 import { webSearch, type WebSearchResult } from "../tools/webSearch.js";
 import { calculator, type CalculatorResult } from "../tools/calculator.js";
 import { ProjectBuilder, type ProjectFile, type ProjectBuildResult } from "../tools/projectBuilder.js";
+import { getTemplate, listTemplates } from "../tools/projectTemplates.js";
+import { installDependencies, buildProject, runTests } from "../tools/buildRunner.js";
 
 // Errors that are worth retrying (usually transient LLM output issues)
 const RETRYABLE_ERROR_PATTERNS = [
@@ -40,15 +42,15 @@ export interface LLMResponse {
     completionTokens: number;
     totalTokens: number;
   };
-  // If a project was built during this response
+  
   projectBuild?: ProjectBuildResult;
 }
 
 // Active project builder instance (one per generation)
-// Using a type assertion to work around TypeScript narrowing issues
+
 let activeProjectBuilder: ProjectBuilder | null = null;
 
-// Helper to get the project builder with correct typing
+
 function getActiveBuilder(): ProjectBuilder | null {
   return activeProjectBuilder;
 }
@@ -62,12 +64,12 @@ function isRetryableError(error: unknown): boolean {
   const errorName = (error as Error).name || '';
   const errorMessage = (error as Error).message || '';
   
-  // Check error name against known retryable errors
+  
   if (RETRYABLE_ERROR_PATTERNS.some(name => errorName.includes(name))) {
     return true;
   }
   
-  // Check for JSON parsing errors in the message
+  
   if (errorMessage.includes('JSON parsing failed') || 
       errorMessage.includes('Invalid arguments for tool')) {
     return true;
@@ -156,7 +158,7 @@ export class LLMClient {
           try {
             const results = await webSearch(query);
             logger.tool("web_search", "success", `Found ${results.length} results`);
-            // Log result snippets for debugging
+            
             for (const r of results.slice(0, 2)) {
               logger.debug(`Search result: "${r.title}" - ${r.snippet.substring(0, 100)}...`);
             }
@@ -210,7 +212,7 @@ export class LLMClient {
         }),
         execute: async ({ code, language, task }) => {
           logger.tool("code_analysis", "start", `Task: ${task}`);
-          // This is a meta-tool - it returns structured data for the LLM to use
+          
           return {
             code,
             language: language || "unknown",
@@ -220,7 +222,7 @@ export class LLMClient {
         },
       });
 
-      // Project builder tool - creates files that will be packaged into a zip
+      
       tools.create_file = tool({
         description: `Create a file for a deliverable code project (website, app, script, tool). Only use this when the job is asking for an actual downloadable project — NOT for text-based requests like writing tweets, emails, essays, or answers. Call multiple times for multi-file projects, then use finalize_project to package them.`,
         parameters: z.object({
@@ -236,7 +238,7 @@ export class LLMClient {
         execute: async ({ path, content }) => {
           logger.tool("create_file", "start", `Creating: ${path}`);
           try {
-            // Initialize project builder if not exists
+            
             if (!activeProjectBuilder) {
               activeProjectBuilder = new ProjectBuilder();
             }
@@ -291,6 +293,71 @@ export class LLMClient {
           }
         },
       });
+
+      tools.get_template = tool({
+        description: "Get a pre-built project template to start from. Available templates: vanillaHTML, reactVite, nodeExpress, pythonFlask, staticSite, todoApp.",
+        parameters: z.object({
+          templateName: z.string().describe("Name of the template to retrieve"),
+        }),
+        execute: async ({ templateName }) => {
+          logger.tool("get_template", "start", `Getting template: ${templateName}`);
+          try {
+            const files = getTemplate(templateName);
+            logger.tool("get_template", "success", `Got template with ${files.length} files`);
+            return {
+              success: true,
+              templateName,
+              files: files.map(f => ({ path: f.path, size: f.content.length })),
+              note: "Template files retrieved. Use create_file to create them in your project.",
+              availableTemplates: listTemplates(),
+            };
+          } catch (error) {
+            logger.tool("get_template", "error", String(error));
+            throw error;
+          }
+        },
+      });
+
+      tools.build_and_test = tool({
+        description: "Build and test the project you've created. Runs npm install, npm build, npm test. Use this AFTER creating files but BEFORE finalizing.",
+        parameters: z.object({
+          projectName: z.string().describe("Name of the project to build and test"),
+        }),
+        execute: async ({ projectName }) => {
+          logger.tool("build_and_test", "start", `Building and testing: ${projectName}`);
+          try {
+            if (!activeProjectBuilder) {
+              throw new Error("No project found. Use create_file first.");
+            }
+            const projectDir = activeProjectBuilder.getProjectDir();
+            
+            logger.tool("build_and_test", "start", "Installing dependencies...");
+            const installResult = await installDependencies(projectDir);
+            if (!installResult.success) {
+              return { success: false, stage: "install", error: installResult.errors.join("\n"), fix: "Check package.json" };
+            }
+
+            logger.tool("build_and_test", "start", "Building project...");
+            const buildResult = await buildProject(projectDir);
+            if (!buildResult.success) {
+              return { success: false, stage: "build", error: buildResult.errors.join("\n"), fix: "Fix build errors" };
+            }
+
+            logger.tool("build_and_test", "start", "Running tests...");
+            const testResult = await runTests(projectDir);
+            if (!testResult.success) {
+              return { success: false, stage: "test", error: `Tests failed: ${testResult.failed}`, fix: "Fix failing tests" };
+            }
+
+            logger.tool("build_and_test", "success", "All checks passed!");
+            return { success: true, output: "Project validated! Use finalize_project now." };
+          } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            logger.tool("build_and_test", "error", errorMsg);
+            return { success: false, stage: "unknown", error: errorMsg };
+          }
+        },
+      });
     }
 
     return tools;
@@ -310,7 +377,7 @@ export class LLMClient {
 
     logger.debug(`Generating response with model: ${this.model}`);
 
-    // Reset project builder for each generation
+    
     activeProjectBuilder = null;
 
     const tools = enableTools ? this.getTools() : undefined;
@@ -320,7 +387,7 @@ export class LLMClient {
     let attempt = 0;
     const retryConfig = getRetryConfig();
 
-    // Retry loop for recoverable errors
+    
     while (attempt <= retryConfig.maxRetries) {
       try {
         const result = await this.executeGeneration({
@@ -342,7 +409,7 @@ export class LLMClient {
             `retrying in ${delay}ms: ${(error as Error).message?.substring(0, 100)}`
           );
           
-          // Reset project builder before retry
+          
           activeProjectBuilder = null;
           
           await sleep(delay);
@@ -350,14 +417,14 @@ export class LLMClient {
           continue;
         }
         
-        // Not retryable or exhausted retries - try fallback if tools were enabled
+        
         if (hasTools && retryConfig.fallbackNoTools && attempt >= retryConfig.maxRetries && isRetryableError(error)) {
           logger.warn(
             `Exhausted ${retryConfig.maxRetries} retries for tool calling, attempting fallback without tools`
           );
           
           try {
-            // Reset and try without tools
+            
             activeProjectBuilder = null;
             const fallbackResult = await this.executeGeneration({
               prompt: prompt + "\n\n[Note: Please provide a text response only, as tool execution is temporarily unavailable.]",
@@ -376,7 +443,7 @@ export class LLMClient {
           }
         }
         
-        // Re-throw non-retryable errors immediately
+        
         throw error;
       }
     }
@@ -406,9 +473,9 @@ export class LLMClient {
         maxTokens,
         temperature,
         tools: hasTools ? tools : undefined,
-        maxSteps: hasTools ? 10 : 1, // Allow up to 10 tool call steps
+        maxSteps: hasTools ? 10 : 1, 
         onStepFinish: (step) => {
-          // Debug logging for each step
+          
           logger.debug(`Step finished - finishReason: ${step.finishReason}, hasText: ${!!step.text}, toolCalls: ${step.toolCalls?.length || 0}`);
           if (step.text) {
             logger.debug(`Step text preview: ${step.text.substring(0, 100)}...`);
@@ -416,10 +483,10 @@ export class LLMClient {
         },
       });
 
-      // Log completion info
+      
       logger.debug(`Generation complete - finishReason: ${result.finishReason}, steps: ${result.steps?.length || 0}`);
       
-      // Extract tool calls from steps
+      
       const toolCalls: LLMResponse["toolCalls"] = [];
       if (result.steps) {
         for (const step of result.steps) {
@@ -445,7 +512,7 @@ export class LLMClient {
                 result: toolResult,
               });
               
-              // Log tool results for debugging
+              
               if (toolResult) {
                 const resultStr = JSON.stringify(toolResult);
                 logger.debug(`Tool ${tc.toolName} result: ${resultStr.substring(0, 200)}...`);
@@ -462,7 +529,7 @@ export class LLMClient {
       // If we have no text but have tool results, the model may not have generated a final response
       if (!finalText && toolCalls.length > 0) {
         logger.warn("Model finished with tool calls but no final text response. Finish reason:", result.finishReason);
-        // Try to get text from the last step that has text
+        
         if (result.steps) {
           for (let i = result.steps.length - 1; i >= 0; i--) {
             if (result.steps[i].text) {
@@ -473,10 +540,10 @@ export class LLMClient {
         }
       }
 
-      // Check if a project was built during this generation
+      
       let projectBuild: ProjectBuildResult | undefined;
       
-      // Look for finalize_project tool call results
+      
       const finalizeCall = toolCalls.find((tc) => tc.name === "finalize_project");
       if (finalizeCall && finalizeCall.result) {
         const finalizeResult = finalizeCall.result as {
@@ -552,7 +619,7 @@ This indicates how much the requester values this task. Adjust your effort accor
   }
 }
 
-// Export a singleton instance
+
 let llmClientInstance: LLMClient | null = null;
 
 export function getLLMClient(): LLMClient {

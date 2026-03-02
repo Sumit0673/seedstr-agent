@@ -225,11 +225,11 @@ export class SeedstrClient {
   async uploadFile(filePath: string): Promise<FileAttachment> {
     const config = getConfig();
     
-    // Get file info
+    
     const stats = statSync(filePath);
     const fileName = basename(filePath);
     
-    // Determine MIME type based on extension
+    
     const ext = fileName.split(".").pop()?.toLowerCase() || "";
     const mimeTypes: Record<string, string> = {
       zip: "application/zip",
@@ -253,7 +253,7 @@ export class SeedstrClient {
 
     logger.debug(`Uploading file: ${fileName} (${stats.size} bytes, ${mimeType})`);
 
-    // Read file and convert to base64
+    
     const fileBuffer = readFileSync(filePath);
     const base64Content = fileBuffer.toString("base64");
 
@@ -329,7 +329,7 @@ export class SeedstrClient {
   }
 }
 
-// Export a default client instance
+
 export const seedstrClient = new SeedstrClient();
 
 export default SeedstrClient;

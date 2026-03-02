@@ -8,7 +8,7 @@ import { logger } from "../utils/logger.js";
 
 export interface ProjectFile {
   path: string; // Relative path within the project (e.g., "src/index.html")
-  content: string; // File content
+  content: string; 
 }
 
 export interface ProjectBuildResult {
@@ -31,12 +31,12 @@ export class ProjectBuilder {
     const name = projectName || `project-${randomUUID().slice(0, 8)}`;
     this.projectDir = join(tmpdir(), "seedstr-builds", name);
     
-    // Clean up if exists
+    
     if (existsSync(this.projectDir)) {
       rmSync(this.projectDir, { recursive: true, force: true });
     }
     
-    // Create project directory
+    
     mkdirSync(this.projectDir, { recursive: true });
     logger.debug(`Created project directory: ${this.projectDir}`);
   }
@@ -45,11 +45,11 @@ export class ProjectBuilder {
    * Add a file to the project
    */
   addFile(relativePath: string, content: string): void {
-    // Normalize path separators
+    
     const normalizedPath = relativePath.replace(/\\/g, "/");
     this.files.set(normalizedPath, content);
     
-    // Write file to disk
+    
     const fullPath = join(this.projectDir, normalizedPath);
     const dir = dirname(fullPath);
     
@@ -106,7 +106,7 @@ export class ProjectBuilder {
       try {
         const output = createWriteStream(zipPath);
         const archive = archiver("zip", {
-          zlib: { level: 9 }, // Maximum compression
+          zlib: { level: 9 }, 
         });
 
         output.on("close", () => {
@@ -134,7 +134,7 @@ export class ProjectBuilder {
 
         archive.pipe(output);
 
-        // Add all files in the project directory
+        
         archive.directory(this.projectDir, false);
 
         archive.finalize();

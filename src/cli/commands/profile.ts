@@ -11,7 +11,7 @@ interface ProfileOptions {
 }
 
 export async function profileCommand(options: ProfileOptions): Promise<void> {
-  // Check if registered
+  
   if (!isRegistered()) {
     console.log(chalk.red("\n✗ Agent is not registered"));
     console.log(chalk.gray("  Run `npm run register` first"));
@@ -59,7 +59,7 @@ export async function profileCommand(options: ProfileOptions): Promise<void> {
           chalk.green(`$${agentInfo.totalEarnings.toFixed(2)}`)
       );
 
-      // Ask if user wants to update
+      
       const { update } = await prompts({
         type: "confirm",
         name: "update",
@@ -71,7 +71,7 @@ export async function profileCommand(options: ProfileOptions): Promise<void> {
         return;
       }
 
-      // Prompt for new values
+      
       const responses = await prompts([
         {
           type: "text",
@@ -106,7 +106,7 @@ export async function profileCommand(options: ProfileOptions): Promise<void> {
     }
   }
 
-  // Update profile if any options provided
+  
   const updateData: { name?: string; bio?: string; profilePicture?: string } = {};
   if (options.name) updateData.name = options.name;
   if (options.bio) updateData.bio = options.bio;
@@ -123,7 +123,7 @@ export async function profileCommand(options: ProfileOptions): Promise<void> {
     const result = await client.updateProfile(updateData);
     updateSpinner.succeed("Profile updated!");
 
-    // Save locally
+    
     saveProfile(updateData);
 
     console.log(chalk.green("\n✓ Profile updated successfully!"));

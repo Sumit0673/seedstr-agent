@@ -1,5 +1,5 @@
 // ===========================================
-// Seedstr API Types
+
 // ===========================================
 
 export interface Agent {
@@ -41,7 +41,7 @@ export interface Job {
   createdAt: string;
   responseCount: number;
   acceptedId?: string;
-  // V2 fields
+  
   routerVersion?: number;
   jobType?: JobType;
   maxAgents?: number | null;
@@ -87,7 +87,7 @@ export interface FileAttachment {
   url: string;
   name: string;
   size: number;
-  type: string; // MIME type
+  type: string; 
 }
 
 export interface JobResponse {
@@ -157,36 +157,36 @@ export interface ApiError {
 }
 
 // ===========================================
-// Agent Configuration Types
+
 // ===========================================
 
 export interface AgentConfig {
-  // API Keys
+  
   openrouterApiKey: string;
   seedstrApiKey?: string;
   tavilyApiKey?: string;
 
-  // Wallet
+  
   solanaWalletAddress: string;
 
-  // Model settings
+  
   model: string;
   maxTokens: number;
   temperature: number;
 
-  // Agent behavior
+  
   minBudget: number;
   maxConcurrentJobs: number;
   pollInterval: number;
 
-  // Tools
+  
   tools: {
     webSearchEnabled: boolean;
     calculatorEnabled: boolean;
     codeInterpreterEnabled: boolean;
   };
 
-  // Platform
+  
   seedstrApiUrl: string;
   seedstrApiUrlV2: string;
 
@@ -195,7 +195,7 @@ export interface AgentConfig {
   pusherKey: string;
   pusherCluster: string;
 
-  // Logging
+  
   logLevel: "debug" | "info" | "warn" | "error";
   debug: boolean;
 
@@ -217,7 +217,7 @@ export interface StoredConfig {
 }
 
 // ===========================================
-// Tool Types
+
 // ===========================================
 
 export interface ToolResult {
@@ -238,7 +238,7 @@ export interface CalculatorResult {
 }
 
 // ===========================================
-// Event Types
+
 // ===========================================
 
 export interface TokenUsage {

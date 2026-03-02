@@ -15,7 +15,7 @@ interface RegisterOptions {
 }
 
 export async function registerCommand(options: RegisterOptions): Promise<void> {
-  // Check if already registered
+  
   if (isRegistered()) {
     const stored = getStoredAgent();
     console.log(chalk.yellow("\n⚠ Agent is already registered!"));
@@ -37,7 +37,7 @@ export async function registerCommand(options: RegisterOptions): Promise<void> {
 
   console.log(chalk.cyan("\n📝 Agent Registration\n"));
 
-  // Get wallet address
+  
   let walletAddress = options.wallet;
   if (!walletAddress) {
     const config = getConfig();
@@ -62,7 +62,7 @@ export async function registerCommand(options: RegisterOptions): Promise<void> {
     process.exit(1);
   }
 
-  // Get optional owner URL
+  
   let ownerUrl = options.url;
   if (!ownerUrl) {
     const response = await prompts({
@@ -73,7 +73,7 @@ export async function registerCommand(options: RegisterOptions): Promise<void> {
     ownerUrl = response.url || undefined;
   }
 
-  // Register with API
+  
   const spinner = ora("Registering agent...").start();
 
   try {
@@ -82,7 +82,7 @@ export async function registerCommand(options: RegisterOptions): Promise<void> {
 
     spinner.succeed("Agent registered successfully!");
 
-    // Save registration data
+    
     saveRegistration({
       apiKey: result.apiKey,
       agentId: result.agentId,

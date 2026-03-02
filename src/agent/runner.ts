@@ -20,7 +20,7 @@ const MODEL_COSTS: Record<string, { input: number; output: number }> = {
   "meta-llama/llama-3.1-405b-instruct": { input: 3.0, output: 3.0 },
   "meta-llama/llama-3.1-70b-instruct": { input: 0.5, output: 0.5 },
   "google/gemini-pro-1.5": { input: 2.5, output: 7.5 },
-  // Default fallback
+  
   default: { input: 1.0, output: 3.0 },
 };
 
@@ -36,7 +36,7 @@ interface TypedEventEmitter {
   emit(event: "event", data: AgentEvent): boolean;
 }
 
-// Persistent storage for processed jobs
+
 const jobStore = new Conf<{ processedJobs: string[] }>({
   projectName: "seed-agent",
   projectVersion: "1.0.0",
@@ -73,7 +73,7 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
     super();
     this.client = new SeedstrClient();
 
-    // Load previously processed jobs from persistent storage
+    
     const stored = jobStore.get("processedJobs") || [];
     this.processedJobs = new Set(stored);
     logger.debug(`Loaded ${this.processedJobs.size} previously processed jobs`);
@@ -85,14 +85,14 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
   private markJobProcessed(jobId: string): void {
     this.processedJobs.add(jobId);
 
-    // Keep only the last 1000 job IDs to prevent unlimited growth
+    
     const jobArray = Array.from(this.processedJobs);
     if (jobArray.length > 1000) {
       const trimmed = jobArray.slice(-1000);
       this.processedJobs = new Set(trimmed);
     }
 
-    // Persist to storage
+    
     jobStore.set("processedJobs", Array.from(this.processedJobs));
   }
 
@@ -133,7 +133,7 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
     try {
       this.pusher = new PusherClient(config.pusherKey, {
         cluster: config.pusherCluster,
-        // Auth endpoint for private channels
+        
         channelAuthorization: {
           endpoint: `${config.seedstrApiUrlV2}/pusher/auth`,
           transport: "ajax",
@@ -143,7 +143,7 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
         },
       });
 
-      // Connection state handlers
+      
       this.pusher.connection.bind("connected", () => {
         this.wsConnected = true;
         this.emitEvent({ type: "websocket_connected" });
@@ -174,7 +174,7 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
         logger.warn("Will rely on polling for job discovery");
       });
 
-      // Listen for new job notifications
+      
       channel.bind("job:new", (data: WebSocketJobEvent) => {
         logger.info(`[WS] New job received: ${data.jobId} ($${data.budget})`);
         this.emitEvent({ type: "websocket_job", jobId: data.jobId });
@@ -193,12 +193,12 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
   private async handleWebSocketJob(event: WebSocketJobEvent): Promise<void> {
     const config = getConfig();
 
-    // Skip if already processing or processed
+    
     if (this.processingJobs.has(event.jobId) || this.processedJobs.has(event.jobId)) {
       return;
     }
 
-    // Check capacity
+    
     if (this.processingJobs.size >= config.maxConcurrentJobs) {
       logger.debug(`[WS] At capacity, skipping job ${event.jobId}`);
       return;
@@ -217,7 +217,7 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
     }
 
     try {
-      // Fetch full job details
+      
       const job = await this.client.getJobV2(event.jobId);
       this.emitEvent({ type: "job_found", job });
 
@@ -252,7 +252,7 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
   }
 
   // ─────────────────────────────────────────
-  // Lifecycle
+  
   // ─────────────────────────────────────────
 
   /**
@@ -268,7 +268,7 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
     this.stats.startTime = Date.now();
     this.emitEvent({ type: "startup" });
 
-    // Connect WebSocket for real-time job notifications
+    
     this.connectWebSocket();
 
     // Start polling loop (always runs as fallback, slower when WS is active)
@@ -307,9 +307,9 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
       const response = await this.client.listJobsV2(20, 0);
       const jobs = response.jobs;
 
-      // Filter and process new jobs
+      
       for (const job of jobs) {
-        // Skip if already processing or processed
+        
         if (this.processingJobs.has(job.id) || this.processedJobs.has(job.id)) {
           continue;
         }
@@ -335,7 +335,7 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
           continue;
         }
 
-        // Process the job
+        
         this.emitEvent({ type: "job_found", job });
 
         if (job.jobType === "SWARM") {
@@ -375,7 +375,7 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
   }
 
   // ─────────────────────────────────────────
-  // Swarm job handling
+  
   // ─────────────────────────────────────────
 
   /**
@@ -415,7 +415,7 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
   }
 
   // ─────────────────────────────────────────
-  // Job processing
+  
   // ─────────────────────────────────────────
 
   /**
@@ -427,7 +427,7 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
     this.emitEvent({ type: "job_processing", job });
 
     try {
-      // Generate response using LLM
+      
       const llm = getLLMClient();
       const config = getConfig();
 
@@ -437,25 +437,24 @@ export class AgentRunner extends EventEmitter implements TypedEventEmitter {
 
       const result = await llm.generate({
         prompt: job.prompt,
-        systemPrompt: `You are an AI agent participating in the Seedstr marketplace. Your task is to provide the best possible response to job requests.
+        systemPrompt: `You are an elite AI agent competing in the Seedstr hackathon. Your task is to deliver outstanding responses.
 
-Guidelines:
-- Be helpful, accurate, and thorough
-- Use tools when needed to get current information
-- Provide well-structured, clear responses
-- Be professional and concise
-- If you use web search, cite your sources
+CRITICAL - PROJECT BUILDING:
+- When asked to build ANYTHING, use create_file for each file
+- ALWAYS use build_and_test to validate before finalizing
+- If build_and_test fails, fix errors and retry
 
-Responding to jobs:
-- Most jobs are asking for TEXT responses — writing, answers, advice, ideas, analysis, tweets, emails, etc. For these, just respond directly with well-written text. Do NOT create files for text-based requests.
-- Only use create_file and finalize_project when the job is genuinely asking for a deliverable code project (a website, app, script, tool, etc.) that the requester would need to download and run/open.
-- Use your judgment to determine what the requester actually wants. "Write me a tweet" = text response. "Build me a landing page" = file project.
+BUILD FLOW:
+1. create_file → Create all project files
+2. build_and_test → Validate (install deps, build, test)
+3. If FAIL → Fix errors → Retry
+4. If PASS → finalize_project
 
 Job Budget: $${effectiveBudget.toFixed(2)} USD${job.jobType === "SWARM" ? ` (your share of $${job.budget.toFixed(2)} total across ${job.maxAgents} agents)` : ""}`,
         tools: true,
       });
 
-      // Track token usage
+      
       let usage: TokenUsage | undefined;
       if (result.usage) {
         const cost = estimateCost(
@@ -470,7 +469,7 @@ Job Budget: $${effectiveBudget.toFixed(2)} USD${job.jobType === "SWARM" ? ` (you
           estimatedCost: cost,
         };
 
-        // Update cumulative stats
+        
         this.stats.totalPromptTokens += result.usage.promptTokens;
         this.stats.totalCompletionTokens += result.usage.completionTokens;
         this.stats.totalTokens += result.usage.totalTokens;
@@ -484,7 +483,7 @@ Job Budget: $${effectiveBudget.toFixed(2)} USD${job.jobType === "SWARM" ? ` (you
         usage,
       });
 
-      // Check if a project was built
+      
       if (result.projectBuild && result.projectBuild.success) {
         const { projectBuild } = result;
 
@@ -496,7 +495,7 @@ Job Budget: $${effectiveBudget.toFixed(2)} USD${job.jobType === "SWARM" ? ` (you
         });
 
         try {
-          // Upload the zip file
+          
           this.emitEvent({
             type: "files_uploading",
             job,
@@ -511,7 +510,7 @@ Job Budget: $${effectiveBudget.toFixed(2)} USD${job.jobType === "SWARM" ? ` (you
             files: [uploadedFiles],
           });
 
-          // Submit response with file attachment
+          
           let submitResult;
           if (useV2Submit) {
             submitResult = await this.client.submitResponseV2(
@@ -532,7 +531,7 @@ Job Budget: $${effectiveBudget.toFixed(2)} USD${job.jobType === "SWARM" ? ` (you
             hasFiles: true,
           });
 
-          // Cleanup project files
+          
           cleanupProject(projectBuild.projectDir, projectBuild.zipPath);
         } catch (uploadError) {
           // If upload fails, fall back to text-only response
@@ -552,11 +551,11 @@ Job Budget: $${effectiveBudget.toFixed(2)} USD${job.jobType === "SWARM" ? ` (you
             hasFiles: false,
           });
 
-          // Still cleanup
+          
           cleanupProject(projectBuild.projectDir, projectBuild.zipPath);
         }
       } else {
-        // Text-only response
+        
         let submitResult;
         if (useV2Submit) {
           submitResult = await this.client.submitResponseV2(job.id, result.text);

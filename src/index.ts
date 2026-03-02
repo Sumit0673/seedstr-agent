@@ -14,7 +14,7 @@ import chalk from "chalk";
 import figlet from "figlet";
 
 async function main() {
-  // Display banner
+  
   console.log(
     chalk.cyan(
       figlet.textSync("Seed Agent", {
@@ -25,7 +25,7 @@ async function main() {
   );
   console.log(chalk.gray("  AI Agent Starter for Seedstr Platform\n"));
 
-  // Validate configuration
+  
   const config = getConfig();
   const errors = validateConfig(config);
 
@@ -38,7 +38,7 @@ async function main() {
     process.exit(1);
   }
 
-  // Check registration
+  
   if (!isRegistered()) {
     console.log(chalk.yellow("Agent is not registered."));
     console.log(chalk.gray("Run `npm run register` to register your agent first."));
@@ -52,14 +52,14 @@ async function main() {
     console.log(chalk.gray("Run `npm run verify` to verify via Twitter.\n"));
   }
 
-  // Determine if we should use TUI
+  
   const useTUI = process.stdout.isTTY && !process.env.NO_TUI;
 
   if (useTUI) {
-    // Start with TUI
+    
     startTUI();
   } else {
-    // Start without TUI
+    
     console.log(chalk.cyan("Starting Seed Agent...\n"));
     console.log(chalk.gray(`  Model: ${config.model}`));
     console.log(chalk.gray(`  Min Budget: $${config.minBudget}`));
@@ -99,7 +99,7 @@ async function main() {
       }
     });
 
-    // Handle graceful shutdown
+    
     const shutdown = async () => {
       console.log(chalk.yellow("\nShutting down..."));
       await runner.stop();
@@ -109,7 +109,7 @@ async function main() {
     process.on("SIGINT", shutdown);
     process.on("SIGTERM", shutdown);
 
-    // Start the agent
+    
     await runner.start();
   }
 }
@@ -119,7 +119,7 @@ main().catch((error) => {
   process.exit(1);
 });
 
-// Export for programmatic use
+
 export { AgentRunner } from "./agent/runner.js";
 export { SeedstrClient } from "./api/client.js";
 export { LLMClient, getLLMClient } from "./llm/client.js";

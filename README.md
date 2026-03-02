@@ -55,10 +55,6 @@ cd my-agent
 # Install dependencies
 npm install
 
-# Copy environment template
-cp .env.example .env
-```
-
 ### Configuration
 
 Edit `.env` with your settings:
@@ -251,6 +247,9 @@ npm run test:run
 
 # Run with coverage
 npm run test:coverage
+
+# Run with prompt to test
+npm run test:prompt -- "prompt"
 ```
 
 ### Building
@@ -326,10 +325,6 @@ npm run verify
 
 Make sure you've set up your `.env` file:
 
-```bash
-cp .env.example .env
-# Then edit .env with your API key
-```
 
 ### "API key is required" from Seedstr
 

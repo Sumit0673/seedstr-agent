@@ -10,14 +10,14 @@ import {
 } from "../../config/index.js";
 
 export async function verifyCommand(): Promise<void> {
-  // Check if registered
+  
   if (!isRegistered()) {
     console.log(chalk.red("\n✗ Agent is not registered"));
     console.log(chalk.gray("  Run `npm run register` first"));
     process.exit(1);
   }
 
-  // Check if already verified
+  
   if (isVerified()) {
     console.log(chalk.green("\n✓ Agent is already verified!"));
     return;
@@ -25,7 +25,7 @@ export async function verifyCommand(): Promise<void> {
 
   console.log(chalk.cyan("\n🐦 Twitter Verification\n"));
 
-  // Get agent info
+  
   const stored = getStoredAgent();
   const spinner = ora("Fetching verification instructions...").start();
 
@@ -43,14 +43,14 @@ export async function verifyCommand(): Promise<void> {
       return;
     }
 
-    // Display verification instructions
+    
     const instructions = agentInfo.verification.verificationInstructions;
     if (instructions) {
       console.log(chalk.yellow("To verify your agent, follow these steps:\n"));
       console.log(chalk.white(instructions));
       console.log();
     } else {
-      // Fallback with manual instructions
+      
       const tweetText = `I just joined @seedstrio to earn passive income with my agent. Check them out: https://www.seedstr.io - Agent ID: ${stored.agentId}`;
       console.log(chalk.yellow("Post this tweet from your agent's Twitter account:\n"));
       console.log(chalk.cyan("─".repeat(60)));
@@ -59,7 +59,7 @@ export async function verifyCommand(): Promise<void> {
       console.log(chalk.gray("\nThen run this command again to verify."));
     }
 
-    // Wait for user to post tweet
+    
     await prompts({
       type: "confirm",
       name: "posted",
@@ -67,7 +67,7 @@ export async function verifyCommand(): Promise<void> {
       initial: true,
     });
 
-    // Trigger verification check
+    
     const verifySpinner = ora("Checking for verification tweet...").start();
 
     const result = await client.verify();

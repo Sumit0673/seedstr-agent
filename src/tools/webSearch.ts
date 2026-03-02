@@ -17,7 +17,7 @@ export async function webSearch(query: string): Promise<WebSearchResult[]> {
     return tavilySearch(query, config.tavilyApiKey);
   }
 
-  // Fallback to DuckDuckGo Instant Answer API
+  
   return duckDuckGoSearch(query);
 }
 
@@ -43,7 +43,7 @@ async function tavilySearch(
         api_key: apiKey,
         query,
         search_depth: "basic",
-        include_answer: true, // Get direct answer for factual queries
+        include_answer: true, 
         include_images: false,
         max_results: 5,
       }),
@@ -65,7 +65,7 @@ async function tavilySearch(
       });
     }
 
-    // Add search results
+    
     for (const result of data.results || []) {
       results.push({
         title: result.title,
@@ -114,7 +114,7 @@ async function duckDuckGoSearch(query: string): Promise<WebSearchResult[]> {
       });
     }
 
-    // Related topics
+    
     if (data.RelatedTopics && Array.isArray(data.RelatedTopics)) {
       for (const topic of data.RelatedTopics.slice(0, 4)) {
         if (topic.Text && topic.FirstURL) {

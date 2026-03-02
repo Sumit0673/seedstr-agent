@@ -142,7 +142,7 @@ Job Budget: $${effectiveBudget.toFixed(2)} USD${fakeJob.jobType === "SWARM" ? ` 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     spinner.succeed(`Response generated in ${elapsed}s`);
 
-    // Token usage
+    
     let usage: TokenUsage | undefined;
     if (result.usage) {
       const cost = estimateCost(config.model, result.usage.promptTokens, result.usage.completionTokens);
@@ -154,7 +154,7 @@ Job Budget: $${effectiveBudget.toFixed(2)} USD${fakeJob.jobType === "SWARM" ? ` 
       };
     }
 
-    // Tool calls summary
+    
     if (result.toolCalls && result.toolCalls.length > 0) {
       console.log(chalk.cyan("\n📦 Tool Calls:"));
       for (const tc of result.toolCalls) {
@@ -163,7 +163,7 @@ Job Budget: $${effectiveBudget.toFixed(2)} USD${fakeJob.jobType === "SWARM" ? ` 
       }
     }
 
-    // Project build info
+    
     if (result.projectBuild && result.projectBuild.success) {
       console.log(chalk.cyan("\n📁 Project Built:"));
       console.log(chalk.gray(`  Zip: ${result.projectBuild.zipPath}`));
@@ -173,7 +173,7 @@ Job Budget: $${effectiveBudget.toFixed(2)} USD${fakeJob.jobType === "SWARM" ? ` 
       console.log(chalk.gray(`  In production, this zip would be uploaded and submitted with the response.`));
     }
 
-    // Token usage display
+    
     if (usage) {
       console.log(chalk.cyan("\n📊 Token Usage:"));
       console.log(chalk.gray(`  Prompt:     `) + chalk.white(usage.promptTokens.toLocaleString()));
@@ -182,14 +182,14 @@ Job Budget: $${effectiveBudget.toFixed(2)} USD${fakeJob.jobType === "SWARM" ? ` 
       console.log(chalk.gray(`  Est. Cost:  `) + chalk.yellow(`$${usage.estimatedCost.toFixed(4)}`));
     }
 
-    // Response output
+    
     console.log(chalk.cyan("\n" + "═".repeat(60)));
     console.log(chalk.cyan.bold("  Agent Response"));
     console.log(chalk.cyan("═".repeat(60)) + "\n");
     console.log(result.text);
     console.log(chalk.cyan("\n" + "═".repeat(60)));
 
-    // Summary
+    
     console.log(chalk.green("\n✓ Simulation complete!"));
     console.log(chalk.gray("  In production, this response would be submitted to the Seedstr platform."));
 
@@ -204,7 +204,7 @@ Job Budget: $${effectiveBudget.toFixed(2)} USD${fakeJob.jobType === "SWARM" ? ` 
       );
     }
 
-    // Cleanup project files if they were built
+    
     if (result.projectBuild && result.projectBuild.success) {
       const { confirm } = await prompts({
         type: "confirm",

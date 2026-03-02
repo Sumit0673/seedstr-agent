@@ -8,3 +8,4 @@ export {
   type ProjectFile,
   type ProjectBuildResult,
 } from "./projectBuilder.js";
+export { getTemplate, listTemplates, type ProjectTemplate } from "./projectTemplates.js";
