@@ -4,10 +4,6 @@ export interface CalculatorResult {
   formattedResult: string;
 }
 
-/**
- * Safe mathematical expression evaluator
- * Supports basic operations, functions, and constants
- */
 export function calculator(expression: string): CalculatorResult {
   
   const sanitized = sanitizeExpression(expression);
@@ -22,9 +18,6 @@ export function calculator(expression: string): CalculatorResult {
   };
 }
 
-/**
- * Sanitize the expression to prevent code injection
- */
 function sanitizeExpression(expr: string): string {
   
   let sanitized = expr.replace(/\s+/g, "");
@@ -74,9 +67,6 @@ function sanitizeExpression(expr: string): string {
   return sanitized;
 }
 
-/**
- * Safely evaluate a mathematical expression
- */
 function evaluateExpression(expr: string): number {
   try {
     
@@ -99,9 +89,6 @@ function evaluateExpression(expr: string): number {
   }
 }
 
-/**
- * Format the result for display
- */
 function formatResult(result: number): string {
   
   if (Number.isInteger(result)) {

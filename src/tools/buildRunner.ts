@@ -226,9 +226,6 @@ export async function runTests(projectDir: string): Promise<TestResult> {
   });
 }
 
-/**
- * Generate a simple test based on project type
- */
 export function generateTestFile(projectDir: string): string | null {
   const packageJsonPath = join(projectDir, "package.json");
   

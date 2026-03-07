@@ -180,16 +180,10 @@ export async function buildProject(
   return builder.createZip();
 }
 
-/**
- * Get the zip file as a Buffer for uploading
- */
 export function getZipBuffer(zipPath: string): Buffer {
   return readFileSync(zipPath);
 }
 
-/**
- * Clean up a project's files and zip
- */
 export function cleanupProject(projectDir: string, zipPath?: string): void {
   try {
     if (existsSync(projectDir)) {

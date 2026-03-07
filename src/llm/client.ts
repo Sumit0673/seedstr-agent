@@ -17,9 +17,6 @@ const RETRYABLE_ERROR_PATTERNS = [
   'AI_JSONParseError',
 ];
 
-/**
- * Get retry configuration from app config
- */
 function getRetryConfig() {
   const config = getConfig();
   return {
@@ -55,9 +52,6 @@ function getActiveBuilder(): ProjectBuilder | null {
   return activeProjectBuilder;
 }
 
-/**
- * Check if an error is retryable (transient LLM output parsing issue)
- */
 function isRetryableError(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false;
   
@@ -84,9 +78,6 @@ function isRetryableError(error: unknown): boolean {
   return false;
 }
 
-/**
- * Calculate exponential backoff delay with jitter
- */
 function getRetryDelay(attempt: number, retryConfig: ReturnType<typeof getRetryConfig>): number {
   const delay = Math.min(
     retryConfig.baseDelayMs * Math.pow(2, attempt),
@@ -97,9 +88,6 @@ function getRetryDelay(attempt: number, retryConfig: ReturnType<typeof getRetryC
   return Math.round(delay + jitter);
 }
 
-/**
- * Sleep for a given number of milliseconds
- */
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }

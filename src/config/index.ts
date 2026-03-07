@@ -29,9 +29,6 @@ export const configStore = new Conf<StoredConfig>({
   },
 });
 
-/**
- * Get the full agent configuration from environment variables and stored config
- */
 export function getConfig(): AgentConfig {
   const stored = configStore.store;
 
@@ -84,9 +81,6 @@ export function getConfig(): AgentConfig {
   };
 }
 
-/**
- * Validate that required configuration is present
- */
 export function validateConfig(config: AgentConfig): string[] {
   const errors: string[] = [];
 
@@ -101,23 +95,14 @@ export function validateConfig(config: AgentConfig): string[] {
   return errors;
 }
 
-/**
- * Check if the agent is registered
- */
 export function isRegistered(): boolean {
   return !!configStore.get("seedstrApiKey");
 }
 
-/**
- * Check if the agent is verified
- */
 export function isVerified(): boolean {
   return configStore.get("isVerified") === true;
 }
 
-/**
- * Save registration data
- */
 export function saveRegistration(data: {
   apiKey: string;
   agentId: string;
@@ -128,16 +113,10 @@ export function saveRegistration(data: {
   configStore.set("walletAddress", data.walletAddress);
 }
 
-/**
- * Save verification status
- */
 export function saveVerification(isVerified: boolean): void {
   configStore.set("isVerified", isVerified);
 }
 
-/**
- * Save profile data
- */
 export function saveProfile(data: {
   name?: string;
   bio?: string;
@@ -148,16 +127,10 @@ export function saveProfile(data: {
   if (data.profilePicture) configStore.set("profilePicture", data.profilePicture);
 }
 
-/**
- * Get stored agent info
- */
 export function getStoredAgent(): StoredConfig {
   return configStore.store;
 }
 
-/**
- * Clear all stored configuration
- */
 export function clearConfig(): void {
   configStore.clear();
 }
